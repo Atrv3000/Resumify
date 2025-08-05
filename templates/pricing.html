@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pricing – Resumify</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+  <div class="max-w-6xl mx-auto px-6 py-10">
+    <h1 class="text-4xl font-bold text-center mb-6 text-indigo-700">Pricing Plans</h1>
+
+    <!-- Show current tokens -->
+    {% if current_user.is_authenticated %}
+      <p class="text-center text-sm text-gray-600 mb-10">
+        You currently have 
+        <span class="font-semibold">{{ current_user.tokens }}</span> 
+        token{% if current_user.tokens != 1 %}s{% endif %} left.
+      </p>
+    {% endif %}
+
+    <!-- Token Packs -->
+    <h2 class="text-2xl font-semibold mb-6 text-center">Buy Tokens</h2>
+    <div class="grid md:grid-cols-3 gap-6 mb-12">
+      <!-- 1 Token -->
+      <div class="bg-white p-6 rounded-lg shadow text-center">
+        <h3 class="text-xl font-bold mb-2">1 Token</h3>
+        <p class="text-gray-500 mb-4">Use for 1 resume generation</p>
+        <p class="text-3xl font-bold text-indigo-600 mb-4">₹50</p>
+        <a href="{{ url_for('buy_token', count=1) }}" class="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700">Buy</a>
+      </div>
+
+      <!-- 5 Tokens -->
+      <div class="bg-white p-6 rounded-lg shadow text-center">
+        <h3 class="text-xl font-bold mb-2">5 Tokens</h3>
+        <p class="text-gray-500 mb-4">Save more per resume</p>
+        <p class="text-3xl font-bold text-indigo-600 mb-4">₹100</p>
+        <a href="{{ url_for('buy_token', count=5) }}" class="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700">Buy</a>
+      </div>
+
+      <!-- Free Plan -->
+      <div class="bg-white p-6 rounded-lg shadow text-center border-2 border-green-400">
+        <h3 class="text-xl font-bold mb-2 text-green-600">Free Plan</h3>
+        <p class="text-gray-500 mb-4">3 tokens per day, resets every 24 hrs</p>
+        <p class="text-lg font-semibold text-gray-600 mb-2">No cost</p>
+        {% if current_user.plan == 'free' %}
+          <button class="bg-green-400 text-white px-6 py-2 rounded cursor-not-allowed" disabled>You're on this plan</button>
+        {% else %}
+          <a href="#" class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600">Downgrade</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Lifetime Plans -->
+    <h2 class="text-2xl font-semibold mb-6 text-center">Upgrade for Premium Perks</h2>
+    <div class="grid md:grid-cols-2 gap-6">
+      <!-- Pro Pack -->
+      <div class="bg-white p-6 rounded-lg shadow text-center border-2 border-yellow-400">
+        <h3 class="text-xl font-bold mb-2 text-yellow-600">Pro Pack</h3>
+        <p class="text-gray-500 mb-2">15 tokens + 5 Premium Templates</p>
+        <p class="text-3xl font-bold text-indigo-600 mb-4">₹199</p>
+        {% if current_user.plan == 'pro' %}
+          <button class="bg-yellow-400 text-white px-6 py-2 rounded cursor-not-allowed" disabled>You're on this plan</button>
+        {% else %}
+          <a href="{{ url_for('upgrade', plan='pro') }}" class="bg-yellow-500 text-white px-6 py-2 rounded hover:bg-yellow-600">Upgrade</a>
+        {% endif %}
+      </div>
+
+      <!-- Ultimate Pack -->
+      <div class="bg-white p-6 rounded-lg shadow text-center border-2 border-purple-500">
+        <h3 class="text-xl font-bold mb-2 text-purple-600">Ultimate Pack</h3>
+        <p class="text-gray-500 mb-2">Unlimited tokens + All Templates</p>
+        <p class="text-3xl font-bold text-indigo-600 mb-4">₹499 (Lifetime)</p>
+        {% if current_user.plan == 'ultimate' %}
+          <button class="bg-purple-400 text-white px-6 py-2 rounded cursor-not-allowed" disabled>You're on this plan</button>
+        {% else %}
+          <a href="{{ url_for('upgrade', plan='ultimate') }}" class="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700">Go Unlimited</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

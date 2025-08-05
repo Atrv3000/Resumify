@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Resumes – Resumify</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+  <div class="max-w-5xl mx-auto px-6 py-10">
+    <h1 class="text-3xl font-bold text-indigo-700 mb-8 text-center">Your Resumes</h1>
+
+    {% if resumes %}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% for resume in resumes %}
+          <div class="bg-white rounded shadow p-6">
+            <h2 class="text-xl font-semibold text-gray-700">{{ resume.name }}</h2>
+            <p class="text-sm text-gray-500">{{ resume.profession }}</p>
+            <p class="text-xs text-gray-400 mt-1">Generated on {{ resume.timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+
+            <a href="{{ url_for('view_resume', resume_id=resume.id) }}"
+               class="inline-block mt-4 text-indigo-600 font-medium hover:underline">View Resume</a>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-center text-gray-500">You haven’t generated any resumes yet.</p>
+    {% endif %}
+  </div>
+
+</body>
+</html>
