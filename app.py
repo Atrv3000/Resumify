@@ -82,11 +82,6 @@ def generate_bio(name, profession, skills):
 def index():
     return render_template("index.html")
 
-@app.route('/dashboard')
-@login_required
-def dashboard():
-    resumes = Resume.query.filter_by(user_id=current_user.id).order_by(Resume.timestamp.desc()).all()
-    return render_template('dashboard.html', resumes=resumes)
 
 @app.route('/start')
 @login_required
@@ -192,14 +187,19 @@ def view_resume(resume_id):
     }
     return render_template(f"resume_{resume.template}.html", **context)
 
-@app.route('/resume/delete/<int:resume_id>', methods=['POST'])
+@app.route('/delete/<int:resume_id>', methods=['POST'])
 @login_required
 def delete_resume(resume_id):
-    resume = Resume.query.filter_by(id=resume_id, user_id=current_user.id).first_or_404()
+    resume = Resume.query.get_or_404(resume_id)
+    if resume.user_id != current_user.id:
+        flash("Unauthorized", "error")
+        return redirect(url_for('start'))
+
     db.session.delete(resume)
     db.session.commit()
-    flash("Resume deleted.", "success")
-    return redirect(url_for('dashboard'))
+    flash("Resume deleted successfully!", "success")
+    return redirect(url_for('my_resumes'))
+
 
 @app.route('/resume/<int:resume_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -257,7 +257,7 @@ def edit_resume(resume_id):
 
         db.session.commit()
         flash("Resume updated successfully!", "success")
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('my_resumes'))
 
     return render_template('edit_resume.html', resume=original)
 
@@ -297,7 +297,7 @@ def upgrade(plan):
 
     db.session.add(purchase)
     db.session.commit()
-    return redirect(url_for('dashboard'))
+    return redirect(url_for('my_resumes'))
 
 @app.route('/pricing')
 def pricing():
@@ -316,7 +316,7 @@ def download_resume(resume_id):
     resume = Resume.query.get_or_404(resume_id)
     if resume.user_id != current_user.id:
         flash("Access denied.", "error")
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('my_resumes'))
 
     context = {
         'name': resume.name,
