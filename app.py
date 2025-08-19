@@ -9,7 +9,7 @@ import os, requests
 from config import FREE_TEMPLATES
 from forms import LoginForm, RegisterForm
 from models import db, User, Resume, Purchase
-
+import json 
 # ==============================
 # 🔧 App Setup
 # ==============================
@@ -87,6 +87,7 @@ def index():
 @login_required
 def start():
     return render_template("start.html")
+
 
 @app.route('/generate', methods=['POST'])
 @login_required

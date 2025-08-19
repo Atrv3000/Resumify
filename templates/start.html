@@ -55,13 +55,48 @@
         <input name="skills" class="w-full border px-3 py-2 rounded" placeholder="Python, Flask, SQL, Git" required>
       </div>
 
-      <!-- Experience -->
-      <div>
-        <label class="block font-semibold">Experience</label>
-        <input name="job_title" class="w-full border px-3 py-2 rounded" placeholder="Software Developer">
-        <input name="company" class="w-full border px-3 py-2 rounded mt-2" placeholder="Company Name">
-        <textarea name="job_desc" class="w-full border px-3 py-2 rounded mt-2" rows="2" placeholder="Describe your role and achievements"></textarea>
+      <!-- Experience Section -->
+      <h2 class="text-lg font-semibold text-gray-700 mb-2">Experience</h2>
+      <div id="experience-section">
+        <div class="experience-entry mb-4 border p-4 rounded">
+          <input type="text" name="experience[0][role]" placeholder="Job Title (e.g., Software Developer)"
+                class="w-full p-2 border rounded mb-2">
+          <input type="text" name="experience[0][company]" placeholder="Company Name"
+                class="w-full p-2 border rounded mb-2">
+          <textarea name="experience[0][description]" placeholder="Describe your role and achievements"
+                    class="w-full p-2 border rounded"></textarea>
+        </div>
       </div>
+
+      <!-- Add More Button -->
+      <button type="button" onclick="addExperience()"
+              class="mt-2 px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600">
+        + Add Experience
+      </button>
+
+      <script>
+      let expCount = 1;
+      function addExperience() {
+        const section = document.getElementById('experience-section');
+        const entry = document.createElement('div');
+        entry.classList.add('experience-entry', 'mb-4', 'border', 'p-4', 'rounded');
+        entry.innerHTML = `
+          <input type="text" name="experience[${expCount}][role]" placeholder="Job Title"
+                class="w-full p-2 border rounded mb-2">
+          <input type="text" name="experience[${expCount}][company]" placeholder="Company Name"
+                class="w-full p-2 border rounded mb-2">
+          <textarea name="experience[${expCount}][description]" placeholder="Describe your role and achievements"
+                    class="w-full p-2 border rounded"></textarea>
+          <button type="button" onclick="this.parentElement.remove()"
+                  class="mt-2 px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600">
+            Remove
+          </button>
+        `;
+        section.appendChild(entry);
+        expCount++;
+      }
+      </script>
+
 
       <!-- Education -->
       <div>
