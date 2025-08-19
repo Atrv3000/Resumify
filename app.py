@@ -92,20 +92,25 @@ def start():
 @app.route('/generate', methods=['POST'])
 @login_required
 def generate():
+    # --- Step 1: Refresh tokens if needed ---
     current_user.reset_tokens_if_needed()
+    db.session.commit()
 
     form = request.form
     template = form.get('template', 'classic')
-    is_premium = template not in FREE_TEMPLATES
 
-    if is_premium and not current_user.is_pro_user() and not current_user.is_ultimate_user():
+    # --- Step 2: Premium template check ---
+    is_premium = template not in FREE_TEMPLATES
+    if is_premium and not (current_user.is_pro_user() or current_user.is_ultimate_user()):
         flash("This template is only available for Pro or Ultimate users.", "error")
         return redirect(url_for('pricing'))
 
+    # --- Step 3: Token availability check ---
     if not current_user.has_tokens():
         flash("You're out of tokens. Please buy more or wait for your daily reset.", "error")
         return redirect(url_for('pricing'))
 
+    # --- Step 4: Profile picture handling ---
     pic_url = None
     if 'profile_pic' in request.files:
         pic = request.files['profile_pic']
@@ -115,9 +120,15 @@ def generate():
             pic.save(filepath)
             pic_url = f"/static/uploads/{filename}"
 
-    skills = form['skills'].split(',')
-    bio = form['bio'].strip() or generate_bio(form['name'], form['profession'], ', '.join(skills))
+    # --- Step 5: Bio generation (fallback to AI if empty) ---
+    skills = [s.strip() for s in form.get('skills', '').split(',') if s.strip()]
+    bio = form.get('bio', '').strip() or generate_bio(
+        form['name'], 
+        form['profession'], 
+        ', '.join(skills)
+    )
 
+    # --- Step 6: Save Resume to DB ---
     resume = Resume(
         user_id=current_user.id,
         name=form['name'],
@@ -126,7 +137,7 @@ def generate():
         phone=form.get('phone', ''),
         linkedin=form.get('linkedin', ''),
         bio=bio,
-        skills=','.join([s.strip() for s in skills]),
+        skills=','.join(skills),
         job_title=form.get('job_title', ''),
         company=form.get('company', ''),
         job_desc=form.get('job_desc', ''),
@@ -138,27 +149,32 @@ def generate():
     )
     db.session.add(resume)
 
+    # --- Step 7: Deduct token & commit ---
     current_user.deduct_token()
     current_user.last_generated = datetime.utcnow()
     db.session.commit()
 
+    # --- Step 8: Render resume directly ---
     context = {
-        'name': form['name'],
-        'profession': form['profession'],
-        'email': form.get('email', ''),
-        'phone': form.get('phone', ''),
-        'linkedin': form.get('linkedin', ''),
-        'bio': bio,
-        'skills': [s.strip() for s in skills],
-        'job_title': form.get('job_title', ''),
-        'company': form.get('company', ''),
-        'job_desc': form.get('job_desc', ''),
-        'degree': form.get('degree', ''),
-        'institute': form.get('institute', ''),
-        'grad_year': form.get('grad_year', ''),
-        'profile_pic_url': pic_url
+        'name': resume.name,
+        'profession': resume.profession,
+        'email': resume.email,
+        'phone': resume.phone,
+        'linkedin': resume.linkedin,
+        'bio': resume.bio,
+        'skills': skills,
+        'job_title': resume.job_title,
+        'company': resume.company,
+        'job_desc': resume.job_desc,
+        'degree': resume.degree,
+        'institute': resume.institute,
+        'grad_year': resume.grad_year,
+        'profile_pic_url': resume.profile_pic_url
     }
+
+    flash("Resume generated successfully!", "success")
     return render_template(f"resume_{template}.html", **context)
+
 
 @app.route('/my-resumes')
 @login_required
@@ -188,10 +204,15 @@ def view_resume(resume_id):
     }
     return render_template(f"resume_{resume.template}.html", **context)
 
-@app.route('/delete/<int:resume_id>', methods=['POST'])
+@app.route('/delete_resume/<int:resume_id>', methods=['POST'])
 @login_required
 def delete_resume(resume_id):
+    print(f"[DEBUG] Delete resume called with ID: {resume_id}")
+    print(f"[DEBUG] Current user ID: {current_user.id}")
+    
     resume = Resume.query.get_or_404(resume_id)
+    print(f"[DEBUG] Found resume: {resume.name} owned by user {resume.user_id}")
+    
     if resume.user_id != current_user.id:
         flash("Unauthorized", "error")
         return redirect(url_for('start'))
@@ -199,6 +220,7 @@ def delete_resume(resume_id):
     db.session.delete(resume)
     db.session.commit()
     flash("Resume deleted successfully!", "success")
+    print(f"[DEBUG] Resume {resume_id} deleted successfully")
     return redirect(url_for('my_resumes'))
 
 
