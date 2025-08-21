@@ -1,15 +1,14 @@
-from flask import Flask, abort, render_template, request, redirect, url_for, flash, jsonify, session
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, login_user, login_required, logout_user, current_user, UserMixin
+from datetime import datetime
+import os
+import requests
+from dotenv import load_dotenv
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from dotenv import load_dotenv
-from datetime import datetime
-import os, requests
 from config import FREE_TEMPLATES
 from forms import LoginForm, RegisterForm
 from models import db, User, Resume, Purchase
-import json 
 # ==============================
 # 🔧 App Setup
 # ==============================
@@ -55,7 +54,7 @@ def get_ai_response(prompt, system_prompt, temperature=0.7, max_tokens=150):
         "max_tokens": max_tokens
     }
     try:
-        res = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
+        res = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload, timeout=10)
         if res.status_code == 200:
             return res.json()["choices"][0]["message"]["content"].strip()
     except Exception as e:

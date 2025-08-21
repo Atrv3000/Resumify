@@ -1,13 +1,15 @@
+from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
-from datetime import datetime, date
+
 
 db = SQLAlchemy()
+
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
-    # Auth Info
+    # Authentication
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
@@ -16,9 +18,9 @@ class User(UserMixin, db.Model):
     first_name = db.Column(db.String(30))
     last_name = db.Column(db.String(30))
 
-    # Plan & Token Logic
+    # Plan & Token Management
     plan = db.Column(db.String(20), default="free")   # free, pro, ultimate
-    tokens = db.Column(db.Integer, default=3)         # current available tokens
+    tokens = db.Column(db.Integer, default=3)         # available tokens
     last_token_reset = db.Column(db.DateTime, default=datetime.utcnow)
     last_generated = db.Column(db.DateTime, nullable=True)
 
@@ -62,7 +64,7 @@ class Resume(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
 
-    # Resume Fields
+    # Resume Details
     name = db.Column(db.String(100))
     profession = db.Column(db.String(100))
     email = db.Column(db.String(120))
@@ -71,7 +73,7 @@ class Resume(db.Model):
     bio = db.Column(db.Text)
     skills = db.Column(db.Text)
 
-    # Work
+    # Work Experience
     job_title = db.Column(db.String(100))
     company = db.Column(db.String(100))
     job_desc = db.Column(db.Text)
@@ -91,6 +93,6 @@ class Purchase(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
 
-    amount = db.Column(db.Integer)          # Amount in INR
-    description = db.Column(db.String(100)) # e.g. "Pro Pack", "1 Token"
+    amount = db.Column(db.Integer)             # Amount in INR
+    description = db.Column(db.String(100))    # e.g. "Pro Pack", "1 Token"
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
